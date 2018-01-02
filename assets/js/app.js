@@ -40,7 +40,14 @@ $(document).ready(function() {
 		news3Link: "",
 		news3Date: "",
 		about: "Bitcoin is a cryptocurrency and worldwide payment system. It is the first decentralized digital currency, as the system works without a central bank or single administrator. The network is peer-to-peer and transactions take place between users directly through the use of cryptography, without an intermediary. These transactions are verified by network nodes and recorded in a public distributed ledger called a blockchain. Bitcoin was invented by an unknown person or group of people under the name Satoshi Nakamoto and released as open-source software in 2009.",
-		aboutLink: "https://bitcoin.org/en/"
+		aboutLink: "https://bitcoin.org/en/",
+		//api urls
+		marketCapAPI: "https://api.coinmarketcap.com/v1/ticker/bitcoin/",
+		gdaxStats: "https://api.gdax.com/products/BTC-USD/stats", 
+		gdaxDay: "https://api.gdax.com/products/BTC-USD/candles?granularity=86400",
+		gdaxHour: "https://api.gdax.com/products/BTC-USD/candles?granularity=3600",
+		gdaxSixHour: "https://api.gdax.com/products/BTC-USD/candles?granularity=21600",
+		gdaxFifteenMin: "https://api.gdax.com/products/BTC-USD/candles?granularity=900" 
 	};
 
 	var eth = {
@@ -80,7 +87,14 @@ $(document).ready(function() {
 		news3Link: "",
 		news3Date: "",
 		about: "Ethereum is an open-source, public, blockchain-based distributed computing platform featuring smart contract (scripting) functionality. It provides a decentralized Turing-complete virtual machine, the Ethereum Virtual Machine (EVM), which can execute scripts using an international network of public nodes. Ethereum also provides a cryptocurrency token called 'ether', which can be transferred between accounts and used to compensate participant nodes for computations performed.  'Gas', an internal transaction pricing mechanism, is used to mitigate spam and allocate resources on the network.",
-		aboutLink: "https://www.ethereum.org/"
+		aboutLink: "https://www.ethereum.org/",
+		//api urls
+		marketCapAPI: "https://api.coinmarketcap.com/v1/ticker/ethereum/",
+		gdaxStats: "https://api.gdax.com/products/ETH-USD/stats",
+		gdaxDay: "https://api.gdax.com/products/ETH-USD/candles?granularity=86400",
+		gdaxHour: "https://api.gdax.com/products/ETH-USD/candles?granularity=3600",
+		gdaxSixHour: "https://api.gdax.com/products/ETH-USD/candles?granularity=21600",
+		gdaxFifteenMin: "https://api.gdax.com/products/ETH-USD/candles?granularity=900" 
 	};
 
 	var ltc = {
@@ -120,19 +134,33 @@ $(document).ready(function() {
 		news3Link: "",
 		news3Date: "",
 		about: "Litecoin is a peer-to-peer cryptocurrency and open source software project released under the MIT/X11 license. Creation and transfer of coins is based on an open source cryptographic protocol and is not managed by any central authority. While inspired by, and in most regards technically nearly identical to Bitcoin (BTC), Litecoin is far quicker and cheaper.",
-		aboutLink: "https://litecoin.org/"
+		aboutLink: "https://litecoin.org/",
+		//api urls
+		marketCapAPI: "https://api.coinmarketcap.com/v1/ticker/litecoin/",
+		gdaxStats: "https://api.gdax.com/products/LTC-USD/stats",
+		gdaxDay: "https://api.gdax.com/products/LTC-USD/candles?granularity=86400",
+		gdaxHour: "https://api.gdax.com/products/LTC-USD/candles?granularity=3600",
+		gdaxSixHour: "https://api.gdax.com/products/LTC-USD/candles?granularity=21600",
+		gdaxFifteenMin: "https://api.gdax.com/products/LTC-USD/candles?granularity=900"
 	};
 
+	//list of the coin objects (used with click events to pass object)
 	var coinList = {
 		eth: eth,
 		btc: btc,
 		ltc: ltc
 	};
 
+	//holds set interval data for coin display 
+	var status = { 
+		coinInterval: 0,
+		currentCoin: null
+	}
+
+	//click events
 	//click event for the sidebar and mobile navigation
 	$(".navigation-sel").click(function(){
 		//nav item selected either mobile or sidebar
-		// var navItem = $(this);
 		//gets label of item selected (overview, btc, eth, ltc)
 		var navLabel = $(this).data("label");
 		//Finds selected item on mobile and sidebar
@@ -147,20 +175,64 @@ $(document).ready(function() {
 		sidebarItem.addClass("sidebar-active");
 		sidebarItem.siblings().removeClass("sidebar-active");
 
+		//closes mobile nav if link clicked
+		var mobileNavStatus = $("#navToggleButton").attr("aria-expanded");
+		if (mobileNavStatus = "true") {
+			$("#navToggleButton").addClass("collapsed");
+			$("#navToggleButton").attr("aria-expanded", "false");
+			$("#navbarToggler").removeClass("show");
+		}
+
+
 		if (navLabel === "overview") {
 			$("#overview-display").removeClass("d-none");
 			$("#detailed-display").addClass("d-none");
 			overviewDisplay(); 
+			clearInterval(status.coinInterval);
 		} else {
+			var coinObject = coinList[navLabel];
+			//set coin object in status object for the interval to use
+			status.currentCoin = coinObject;
+
 			$("#overview-display").addClass("d-none");
 			$("#detailed-display").removeClass("d-none");
 
-			var coinObject = coinList[navLabel];
+			//clear deatiled graph data-coin values
+			$("#graph-header").find("a").removeData("data-coin");
+			//set detailed graph data-coin values
+			$("#graph-header").find("a").attr("data-coin", navLabel);
+			
+			//set active graph to 1D
+			$("#graph-header").find("a").removeClass("graph-active");
+			$("#graph-header").find('[data-period="one"]').addClass("graph-active");
+			gdaxHistorical("one", coinObject);
 
+			//Display detailed data
 			coinDisplay(coinObject);
+			//set interval to update coin object
+			clearInterval(status.coinInterval);
+			priceUpdate();
 		}
 	})
 
+	//click event to display detailed graph
+	$("#graph-header").find("a").click(function(){
+		var graphChoice = $(this);
+		var coin = graphChoice.attr("data-coin");
+		var period = graphChoice.attr("data-period");
+		var coinObject = coinList[coin];
+		console.log("coin: ", coin);
+		console.log("period: ", period)
+		console.log("coinObject: ", coinObject);
+		//highlight which item was selected
+		graphChoice.addClass("graph-active");
+		graphChoice.parent().siblings().find("a").removeClass("graph-active");
+		
+		//make graph
+		gdaxHistorical(period, coinObject);
+	})
+
+	//JQuery Update functions
 	//update overview info when selected
 	function overviewDisplay() {
 		//btc
@@ -186,7 +258,6 @@ $(document).ready(function() {
 		$("#overview-ltc-high").text(ltc.highDisplay);
 		$("#overview-ltc-low").text(ltc.lowDisplay);
 		$("#overview-ltc-vol").text(ltc.volumeDisplay);
-
 	}
 
 	//update detailed coin info when selected
@@ -241,323 +312,219 @@ $(document).ready(function() {
 		$("#dtl-coin-about-link").text(coinObj.aboutLinkText);
 	}
 
-	//initial load of overview data
-	overviewDisplay(); 
-
-//coinmarket cap bitcoin
-var coinCapBTC = "https://api.coinmarketcap.com/v1/ticker/bitcoin/";
-
-$.ajax({
-	url: coinCapBTC,
-    method: 'GET',
-    dataType: "Json",
-    success: function(data) {
-    	console.log("Cap - BTC: ", data);
-    	var cap = data[0].market_cap_usd;
-    	var circ = data[0].available_supply;
-    	var max = data[0].max_supply;
-
-    	//set raw numbers in object for any calculations
-    	btc.marketCap = cap;
-    	btc.circulatingSupply = circ;
-    	btc.maxSupply = max;
-
-    	//convert to comma format for display in browser (comma no decimal)
-    	btc.marketCapDisplay = numeral(cap).format('0.00a').toUpperCase();
-    	btc.circulatingSupplyDisplay = numeral(circ).format('0,0');
-    	btc.maxSupplyDisplay = numeral(max).format('0,0');
-
-    },
-    error: function(err) {
-		console.log(err);
+	//update detailed interval 
+	function priceUpdate() {
+		status.coinInterval = setInterval(function(){
+			console.log("price update: ", status.currentCoin);
+			coinDisplay(status.currentCoin)}, 15000);
 	}
-});
 
-//coinmarket cap ethereum
-var coinCapETH = "https://api.coinmarketcap.com/v1/ticker/ethereum/";
+	//APIs
+	//coin market cap to get supply and market cap data
+	function coinCap (coinObj) {
 
-$.ajax({
-	url: coinCapETH,
-    method: 'GET',
-    dataType: "Json",
-    success: function(data) {
-    	console.log("Cap - ETH: ", data);
-   		var cap = data[0].market_cap_usd;
-    	var circ = data[0].available_supply;
-    	var max = data[0].max_supply;
+		$.ajax({
+			url: coinObj.marketCapAPI,
+		    method: 'GET',
+		    dataType: "Json",
+		    success: function(data) {
+		    	console.log("Cap: ", data);
+		    	var cap = data[0].market_cap_usd;
+		    	var circ = data[0].available_supply;
+		    	var max = data[0].max_supply;
 
-    	//set raw numbers in object for any calculations
-    	eth.marketCap = cap;
-    	eth.circulatingSupply = circ;
-    	//No ETH max supply
+		    	//set raw numbers in object for any calculations
+		    	coinObj.marketCap = cap;
+		    	coinObj.circulatingSupply = circ;
+		    	coinObj.maxSupply = max;
 
-    	//convert to comma format for display in browser (comma no decimal)
-    	eth.marketCapDisplay = numeral(cap).format('0.00a').toUpperCase();
-    	eth.circulatingSupplyDisplay = numeral(circ).format('0,0');
-    	//No ETH max supply
-    },
-    error: function(err) {
-		console.log(err);
+		    	//convert to comma format for display in browser (comma no decimal)
+		    	coinObj.marketCapDisplay = numeral(cap).format('0.00a').toUpperCase();
+		    	coinObj.circulatingSupplyDisplay = numeral(circ).format('0,0');
+
+		    	if (coinObj === eth) {
+		    		coinObj.maxSupplyDisplay = "No Limit";
+		    	} else {
+		    		coinObj.maxSupplyDisplay = numeral(max).format('0,0');
+		    	}
+
+		    	//load overview data
+				overviewDisplay(); 
+		    },
+		    error: function(err) {
+				console.log(err);
+			}
+		});
 	}
-});
 
-// //coinmarket cap litecoin
-var coinCapLTC = "https://api.coinmarketcap.com/v1/ticker/litecoin/";
 
-$.ajax({
-	url: coinCapLTC,
-    method: 'GET',
-    dataType: "Json",
-    success: function(data) {
-    	console.log("Cap - LTC: ", data);
-    	var cap = data[0].market_cap_usd;
-    	var circ = data[0].available_supply;
-    	var max = data[0].max_supply;
+	//call GDAX stats and get current price data https://docs.gdax.com/#get-24hr-stats
+	//documentation doesnt show but also returns "last price" which is current price on the exchange
+	function gdaxStats(coinObj) {
 
-    	//set raw numbers in object for any calculations
-    	ltc.marketCap = cap;
-    	ltc.circulatingSupply = circ;
-    	ltc.maxSupply = max;
+		$.ajax({
+			url: coinObj.gdaxStats,
+		    method: 'GET',
+		    dataType: "Json",
+		    success: function(data) {
+		    	console.log("GDAX Stats: ", data);
+		    	var open = parseFloat(data.open);
+		    	var high = parseFloat(data.high);
+		    	var low = parseFloat(data.low);
+		    	var last = parseFloat(data.last);
+		    	var volume = parseFloat(data.volume);
+		    	var volume30 = parseFloat(data.volume_30day);
+		    	
+		    	var calcPrice = last - open; 
+		    	var calcPercent =  (calcPrice / open);
+		    	var calcVol = volume30 / 30;
 
-    	//convert to comma format for display in browser (comma no decimal)
-    	ltc.marketCapDisplay = numeral(cap).format('0.00a').toUpperCase();
-    	ltc.circulatingSupplyDisplay = numeral(circ).format('0,0');
-    	ltc.maxSupplyDisplay = numeral(max).format('0,0');
-    	
-    },
-    error: function(err) {
-		console.log(err);
+		    	//set raw numbers in object for any calculations
+		    	coinObj.open = open;
+		    	coinObj.high = high;
+		    	coinObj.low = low;
+		    	coinObj.price = last;
+		    	coinObj.priceChange = calcPrice;
+		    	coinObj.percentChange = calcPercent;
+		    	coinObj.volume = volume;
+		    	coinObj.avgVolume = calcVol;
+
+		    	//convert to comma format for display in browser (comma no decimal)
+		    	coinObj.openDisplay =  numeral(open).format('0,0.00');
+		    	coinObj.highDisplay = numeral(high).format('0,0.00');
+		    	coinObj.lowDisplay = numeral(low).format('0,0.00');
+		    	coinObj.priceDisplay = numeral(last).format('0,0.00');
+		    	coinObj.priceChangeDisplay = numeral(calcPrice).format('+0,0.00');
+		    	coinObj.percentChangeDisplay = numeral(calcPercent).format("0.00%");
+		    	coinObj.volumeDisplay = numeral(volume).format('0,0');
+		    	coinObj.avgVolumeDisplay = numeral(calcVol).format('0,0');
+
+		    	//load overview data
+				overviewDisplay(); 
+		    },
+		    error: function(err) {
+				console.log(err);
+			}
+		});
 	}
-});
+	
 
-//GDAX Bitcoin
-var gdaxBTC = "https://api.gdax.com/products/BTC-USD/stats";
+	//calls GDAX and gets historical data for graphs https://docs.gdax.com/#get-historic-rates
+	function gdaxHistorical(period, coinObj) {
+		var gdaxUrl = "";
 
-$.ajax({
-	url: gdaxBTC,
-    method: 'GET',
-    dataType: "Json",
-    success: function(data) {
-    	console.log("GDAX BTC: ", data);
-    	var open = parseFloat(data.open);
-    	var high = parseFloat(data.high);
-    	var low = parseFloat(data.low);
-    	var last = parseFloat(data.last);
-    	var volume = parseFloat(data.volume);
-    	var volume30 = parseFloat(data.volume_30day);
-    	
+		if (period === "year") {
+			gdaxUrl = coinObj.gdaxDay;
+		} else if (period === "month"){
+			gdaxUrl = coinObj.gdaxSixHour;
+		} else if (period === "five") {
+			gdaxUrl = coinObj.gdaxHour;
+		} else {
+			gdaxUrl = coinObj.gdaxFifteenMin;
+		}
 
-    	var calcPrice = last - open; 
-    	var calcPercent =  (calcPrice / open);
-    	var calcVol = volume30 / 30;
+		$.ajax({
+			url: gdaxUrl,
+		    method: 'GET',
+		    dataType: "Json",
+		    success: function(data) {
+		    	var gdaxData = data;
+		    	var priceArray = [];
+		    	var labelArray = [];
+		    	//default green
+		    	var colorObj = {
+		    			border: 'rgb(36, 157, 61)',
+		    			background: 'rgba(36, 157, 61, 0.15)'
+		    		};
 
-    	//set raw numbers in object for any calculations
-    	btc.open = open;
-    	btc.high = high;
-    	btc.low = low;
-    	btc.price = last;
-    	btc.priceChange = calcPrice;
-    	btc.percentChange = calcPercent;
-    	btc.volume = volume;
-    	btc.avgVolume = calcVol;
+		    	//year logic
+		    	if (period === "year") {
+		    		//gets 364 days of 1 day prices
+			    	for (i = 0; i < 364; i++) {
+						//use unshift so that current day is at end of array
+			    		priceArray.unshift(gdaxData[i][4]);
+			    		if (i % 73 === 0) {
+				    		labelArray.unshift(moment.unix(gdaxData[i][0]).format('MMM D'));
+				    	} else {
+				    		labelArray.unshift("");
+				    	}
+				    }
+				//month logic
+		    	} else if (period === "month") {
+		    		//gets 364 days of 1 day prices
+			    	for (i = 0; i < 119; i++) {
+			    		priceArray.unshift(gdaxData[i][4]);
+			    		if (i % 24 === 0) {
+				    		labelArray.unshift(moment.unix(gdaxData[i][0]).format('MMM D'));
+				    	} else {
+				    		labelArray.unshift("");
+				    	}
+				    }
+				//five day logic
+		    	} else if (period === "five") {
+		    		for (i = 0; i < 119; i++) {
+		    			priceArray.unshift(gdaxData[i][4]);
+			    		if (i % 24 === 0) {
+				    		labelArray.unshift(moment.unix(gdaxData[i][0]).format('MMM D'));
+				    	} else {
+				    		labelArray.unshift("");
+				    	}
+				    }
+		    	//one day logic
+		    	} else {
+		    		for (i = 0; i < 95; i++) {
+		    			priceArray.unshift(gdaxData[i][4]);
+			    		if (i % 19 === 0) {
+				    		labelArray.unshift(moment.unix(gdaxData[i][0]).format('h:mm a'));
+				    	} else {
+				    		labelArray.unshift("");
+				    	}
+					}
+		    	}
 
+				priceArray.push(coinObj.price);
 
-    	//convert to comma format for display in browser (comma no decimal)
-    	btc.openDisplay =  numeral(open).format('0,0.00');
-    	btc.highDisplay = numeral(high).format('0,0.00');
-    	btc.lowDisplay = numeral(low).format('0,0.00');
-    	btc.priceDisplay = numeral(last).format('0,0.00');
-    	btc.priceChangeDisplay = numeral(calcPrice).format('+0,0.00');
-    	btc.percentChangeDisplay = " (" + numeral(calcPercent).format("0.00%") + ")";
-    	btc.volumeDisplay = numeral(volume).format('0,0');
-    	btc.avgVolumeDisplay = numeral(calcVol).format('0,0');
+				//if opening price is lower than closing price change color of graph to red
+				if (priceArray[0] > priceArray[priceArray.length - 1]) {
+					colorObj.border = 'rgb(210,63,49)';
+					colorObj.background = 'rgba(210,63,49, 0.15)';
+				} 
 
-    },
-    error: function(err) {
-		console.log(err);
-	}
-});
-
-//GDAX Ethereum
-var gdaxETH = "https://api.gdax.com/products/ETH-USD/stats";
-
-$.ajax({
-	url: gdaxETH,
-    method: 'GET',
-    dataType: "Json",
-    success: function(data) {
-    	console.log("GDAX ETH: ", data);
-    	var open = parseFloat(data.open);
-    	var high = parseFloat(data.high);
-    	var low = parseFloat(data.low);
-    	var last = parseFloat(data.last);
-    	var volume = parseFloat(data.volume);
-    	var volume30 = parseFloat(data.volume_30day);
-
-    	var calcPrice = last - open; 
-    	var calcPercent =  (calcPrice / open);
-    	var calcVol = volume30 / 30;
-
-    	//set raw numbers in object for any calculations
-    	eth.open = open;
-    	eth.high = high;
-    	eth.low = low;
-    	eth.price = last;
-    	eth.priceChange = calcPrice;
-    	eth.percentChange = calcPercent;
-    	eth.volume = volume;
-    	eth.avgVolume = calcVol;
-
-    	//convert to comma format for display in browser (comma no decimal)
-    	eth.openDisplay =  numeral(open).format('0,0.00');
-    	eth.highDisplay = numeral(high).format('0,0.00');
-    	eth.lowDisplay = numeral(low).format('0,0.00');
-    	eth.priceDisplay = numeral(last).format('0,0.00');
-    	eth.priceChangeDisplay = numeral(calcPrice).format('+0,0.00');
-    	eth.percentChangeDisplay = " (" + numeral(calcPercent).format("0.00%") + ")";
-    	eth.volumeDisplay = numeral(volume).format('0,0');
-    	eth.avgVolumeDisplay = numeral(calcVol).format('0,0');
-    },
-    error: function(err) {
-		console.log(err);
-	}
-});
-
-//GDAX Litecoin
-var gdaxLTC = "https://api.gdax.com/products/LTC-USD/stats";
-
-$.ajax({
-	url: gdaxLTC,
-    method: 'GET',
-    dataType: "Json",
-    success: function(data) {
-    	console.log("GDAX LTC: ", data);
-    	var open = parseFloat(data.open);
-    	var high = parseFloat(data.high);
-    	var low = parseFloat(data.low);
-    	var last = parseFloat(data.last);
-    	var volume = parseFloat(data.volume);
-    	var volume30 = parseFloat(data.volume_30day);
-
-    	var calcPrice = last - open; 
-    	var calcPercent =  (calcPrice / open);
-    	var calcVol = volume30 / 30;
-
-    	//set raw numbers in object for any calculations
-    	ltc.open = open;
-    	ltc.high = high;
-    	ltc.low = low;
-    	ltc.price = last;
-    	ltc.priceChange = calcPrice;
-    	ltc.percentChange = calcPercent;
-    	ltc.volume = volume;
-    	ltc.avgVolume = calcVol;
-
-    	//convert to comma format for display in browser (comma no decimal)
-    	ltc.openDisplay =  numeral(open).format('0,0.00');
-    	ltc.highDisplay = numeral(high).format('0,0.00');
-    	ltc.lowDisplay = numeral(low).format('0,0.00');
-    	ltc.priceDisplay = numeral(last).format('0,0.00');
-    	ltc.priceChangeDisplay = numeral(calcPrice).format('+0,0.00');
-    	ltc.percentChangeDisplay = " (" + numeral(calcPercent).format("0.00%") + ")";
-    	ltc.volumeDisplay = numeral(volume).format('0,0');
-    	ltc.avgVolumeDisplay = numeral(calcVol).format('0,0');
-    },
-    error: function(err) {
-		console.log(err);
-	}
-});
-
-//gdax bitcoin price series
-//Set up call to get the coinbase time, then call the individual apis for one day(1Y 1M), 15 min (5D 1d) 
-//Starts 1 day back
-// var oneDayBTC = "https://api.gdax.com/products/BTC-USD/candles?end=1514383200&granularity=86400";
-// //
-// //Starts at last hour 
-// var fifteenMinBTC = "https://api.gdax.com/products/BTC-USD/candles?granularity=900"
+		    	//plot chart
+		    	makeChart(priceArray, labelArray, colorObj);
+		    },
+		    error: function(err) {
+				console.log(err);
+			}
+		});
+	}//end gdaxHistorical
 
 
-// $.ajax({
-// 	url: oneDayBTC,
-//     method: 'GET',
-//     dataType: "Json",
-//     success: function(data) {
-//     	console.log("GDAX Price Series BTC: ", data);
-    	
-//     },
-//     error: function(err) {
-// 		console.log(err);
-// 	}
-// });
-
-
-//Charts 
-	// alpha vantage https://www.alphavantage.co/documentation/
-	var endpoint = "https://www.alphavantage.co/query?function=DIGITAL_CURRENCY_DAILY&outputsize=compact&symbol=BTC&market=USD&apikey=9AA4OWCBOEFDUNTK";
-	var pricesesArr = [];
-	var dateArr = [];
-	var ctx = document.getElementById("myChart").getContext('2d');
-	$.ajax({
-		url: endpoint,
-	    method: 'GET',
-	    dataType: "Json",
-	    success: function(data) {
-	    	// console.log(data)
-	    	var obj = data["Time Series (Digital Currency Daily)"]
-	    	// console.log(data["Meta Data"]["Time Series (Digital Currency Daily)"]);
-
-	    	for(var key in obj){
-	    		// console.log(obj[key]["4a. close (USD)"])
-	    		if (pricesesArr.length > 9) {
-	    			break;
-	    		}
-	    		if (dateArr.length > 9){
-	    			break;
-	    		}
-	    		var date = key.slice(5)
-	    		dateArr.unshift(date)
-
-	    		pricesesArr.unshift(parseInt(obj[key]["4a. close (USD)"]))
-	    	}
-
-	    	dateArr.forEach(function(val){
-	    			
-	    	console.log(val)
-	    	})
-
-	    	console.log(dateArr)
-
-			var myChart = new Chart(ctx, {
-	    	type: 'line',
-	    	data: {
-	        	labels: dateArr,
-	        	datasets: [{
-	            	label: '# of Votes',
-	            	data: pricesesArr,
-	            	backgroundColor: [
-		                'rgba(255, 99, 132, 0.2)',
-		                'rgba(54, 162, 235, 0.2)',
-		                'rgba(255, 206, 86, 0.2)',
-		                'rgba(75, 192, 192, 0.2)',
-		                'rgba(153, 102, 255, 0.2)',
-		                'rgba(255, 159, 64, 0.2)'
-	            	],
-	            	borderColor: [
-		                'rgba(255,99,132,1)',
-		                'rgba(54, 162, 235, 1)',
-		                'rgba(255, 206, 86, 1)',
-		                'rgba(75, 192, 192, 1)',
-		                'rgba(153, 102, 255, 1)',
-		                'rgba(255, 159, 64, 1)'
-	            	],
-	            	borderWidth: 1
-	        	}]
-	    	},
+	//Charts 
+	function makeChart(priceData, labelData, colorObj){
+		var ctx = document.getElementById("myChart").getContext('2d');
+		var myChart = new Chart(ctx, {
+		    type: 'line',
+		    data: {
+		        labels: labelData,
+		        datasets: [{
+		            label: '# of Votes',
+		            data: priceData,
+		            backgroundColor: [
+		                colorObj.background
+		            ],
+		            borderColor: [
+		                colorObj.border
+		            ],
+		            borderWidth: 3
+		        }]
+		    },
 		    options: {
 		        scales: {
 		            yAxes: [{
 		                ticks: {
-		                    beginAtZero:false
+		                    beginAtZero:false,
+		      				maxTicksLimit: 5
 		                },
 		            	gridLines: {
 		                    display:false
@@ -566,23 +533,59 @@ $.ajax({
 		            xAxes: [{
 		            	gridLines: {
 		                    display:false
+		                },
+		                ticks: {
+		                	autoSkip: false,
+		    				padding: 0,
+		    				minRotation: 0,
+		    				maxRotation: 0,
+		    				labelOffset: -10,
+		    				drawTicks: true,
+		    				tickMarkLength: 10
 		                }
 		            }]
 		        },//end scales 
+		        elements: {
+	                point:{
+	                    radius: 0
+	                }
+	            },//end elements
 		        maintainAspectRatio: true,
 		    	responsive: true,
 		    	legend: {
-	            	display: false
-	         	},
+		        	display: false
+		     	},
 
 		    }//end options
-			});//end var myChart 
-	    },//End sucess
-	    error: function(err) {
-	    	console.log(err);
-	    }
-	});
+		});//end var myChart
+	}//end make chart
 
-console.log(pricesesArr)
+	//intial loading of page and updated calls
+	function intialLoad() {
+		//call coincap
+		coinCap(btc);
+		coinCap(eth);
+		coinCap(ltc);
+		//update coincap every 3 minutes
+		setInterval(function(){
+			gdaxStats(btc);
+			gdaxStats(eth);
+			gdaxStats(ltc);
+			console.log("Cap updated");
+		}, 180000);
 
+		//call gdax for stats
+		gdaxStats(btc);
+		gdaxStats(eth);
+		gdaxStats(ltc);
+		//update gdax prices 15 seconds
+		setInterval(function(){
+			gdaxStats(btc);
+			gdaxStats(eth);
+			gdaxStats(ltc);
+			console.log("GDAX Stats updated");
+		}, 15000);
+	};
+
+	intialLoad();
 });
