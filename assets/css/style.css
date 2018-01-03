@@ -96,17 +96,17 @@ body {
 
 /*Overview*/
 /*graph*/
-#graph-header {
+.graph-header {
     width: 100%;
     height: 40px;
     padding: 4px 15px;
 }
 
-#graph-header ul {
+.graph-header ul {
     padding: 3px 0px;
 }
 
-#graph-header a {
+.graph-header a {
     text-decoration: none;
     color: black;
     margin-left: 5px;
@@ -124,7 +124,7 @@ body {
     clear: both;
 }
 
-#my-chart {
+#detailedChart {
     margin-top: 25px;
 }
 
@@ -132,12 +132,23 @@ body {
     border-bottom: solid 1px grey;
 }
 
+canvas {
+    min-height: 350px;
+    max-height: 350px;
+}
+
 /*detailed*/
+#detailed-header ul {
+    margin-bottom: 0px;
+}
 
 
 /*Media Queries*/
-@media (max-width: 992px) { 
-    
+@media (max-width: 575.99px) { 
+    canvas {
+        min-height: 220px;
+        max-height: 220px;
+    }
     
 } /* end media queries*/
 
@@ -159,5 +170,6 @@ body {
         margin-top: 70px;
         margin-left: 0px;
     }
+
 } /* end media queries*/
 

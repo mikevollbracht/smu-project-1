@@ -58,14 +58,17 @@
 		<div id="content-container">
 			<div id="overview-display" class="">
 				<h3>Overview</h3>
-	    		<div class="graph rounded focus">
-	    		<!-- 	<canvas id="myChart"></canvas>
-						<div class="w3-sidebar w3-light-grey w3-bar-block" style="width:25%">
-							<h3 class="w3-bar-item">Menu</h3>
-								<a href="#" class="w3-bar-item w3-button">Link 1</a>
-								<a href="#" class="w3-bar-item w3-button">Link 2</a>
-								<a href="#" class="w3-bar-item w3-button">Link 3</a>
-						</div> -->
+				<!-- overview graph -->
+	    		<div  class="graph rounded focus">
+			 	 	<div class="graph-header">
+						<ul class="list-inline float-right">
+							<li class="list-inline-item"><a class="graph-active" href="#" data-graph="overviewChart" data-coin="btc" data-period="one" data-initial="true">Bitcoin</a></li>
+							<li class="list-inline-item"><a href="#" data-graph="overviewChart" data-coin="eth" data-period="one">Ethereum</a></li>
+							<li class="list-inline-item"><a href="#" data-graph="overviewChart" data-coin="ltc" data-period="one">Litecoin</a></li>
+						</ul>	
+					</div>	
+
+			 	 	<canvas id="overviewChart"></canvas>
 	    		</div>
 				
 				<!-- Each product card -->
@@ -129,21 +132,26 @@
 			<!-- Detailed info -->
 	    	<div id="detailed-display" class="d-none">
 	    		<div id="detailed-header">
-					<h3 id="dtl-coin-name" class="d-inline-block"></h3>
-					<h3 id="dtl-coin-price" class="d-inline-block float-right"></h3>
+					<h3 id="dtl-coin-name" class=""></h3>
+					<ul class="list-inline">
+						<li class="list-inline-item"><h3 id="dtl-coin-price"></h3></li>
+						<li class="list-inline-item"><h4 id="dtl-coin-price-change"></h4></li>
+						<li class="list-inline-item"><h4 id="dtl-coin-percent-change"></h4></li>
+					</ul>
+					
 				</div>
 				
 			 	 <div  class="graph rounded focus">
-			 	 	<div id="graph-header">
+			 	 	<div class="graph-header">
 						<ul class="list-inline float-right">
-							<li class="list-inline-item"><a href="#" data-coin="" data-period="one">1D</a></li>
-							<li class="list-inline-item"><a href="#" data-coin="" data-period="five">5D</a></li>
-							<li class="list-inline-item"><a href="#" data-coin="" data-period="month">1M</a></li>
-							<li class="list-inline-item"><a href="#" data-coin="" data-period="year">1Y</a></li>
+							<li class="list-inline-item"><a href="#" data-graph="detailedChart" data-coin="" data-period="one" data-initial="true">1D</a></li>
+							<li class="list-inline-item"><a href="#" data-graph="detailedChart" data-coin="" data-period="five">5D</a></li>
+							<li class="list-inline-item"><a href="#" data-graph="detailedChart" data-coin="" data-period="month">1M</a></li>
+							<li class="list-inline-item"><a href="#" data-graph="detailedChart" data-coin="" data-period="year">1Y</a></li>
 						</ul>	
 					</div>	
 
-			 	 	<canvas id="myChart"></canvas>
+			 	 	<canvas id="detailedChart"></canvas>
 	    		</div>
 
 				<!-- End of graph -->
@@ -151,9 +159,7 @@
 					<div class="col-12 col-sm-6 col-lg-4">
 					   <div class="card">
 				      		<div class="card-body">
-						      	<h4 class="panel-title">Stats</h4>
-						      	<h6>Change<span id="dtl-coin-price-change" class="float-right"></span></h6>
-						      	<h6>Percent<span id="dtl-coin-percent-change" class="float-right"></span></h6>
+						      	<h4 class="panel-title">24 Hour Stats</h4>
 								<h6>Open<span id="dtl-coin-open" class="float-right"></span></h6>
 						      	<h6>High<span id="dtl-coin-high" class="float-right"></span></h6>
 						      	<h6>Low<span id="dtl-coin-low" class="float-right"></span></h6>

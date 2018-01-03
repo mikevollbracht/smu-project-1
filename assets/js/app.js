@@ -151,10 +151,15 @@ $(document).ready(function() {
 		ltc: ltc
 	};
 
-	//holds set interval data for coin display 
+	//holds set interval data for coin display and historical
 	var status = { 
 		coinInterval: 0,
-		currentCoin: null
+		currentCoin: null,
+		historicalInterval: 0,
+		period: "one",
+		coinObj: btc,
+		graph: "overviewChart",
+		initialLoad: true
 	}
 
 	//click events
@@ -183,12 +188,18 @@ $(document).ready(function() {
 			$("#navbarToggler").removeClass("show");
 		}
 
-
 		if (navLabel === "overview") {
 			$("#overview-display").removeClass("d-none");
 			$("#detailed-display").addClass("d-none");
 			overviewDisplay(); 
-			clearInterval(status.coinInterval);
+
+			//display overview graph
+			gdaxHistorical("one", btc, "overviewChart");
+
+			//set active graph to bitcoin
+			$(".graph-header").find("a").removeClass("graph-active");
+			$(".graph-header").find('[data-initial="true"]').addClass("graph-active");
+
 		} else {
 			var coinObject = coinList[navLabel];
 			//set coin object in status object for the interval to use
@@ -198,38 +209,36 @@ $(document).ready(function() {
 			$("#detailed-display").removeClass("d-none");
 
 			//clear deatiled graph data-coin values
-			$("#graph-header").find("a").removeData("data-coin");
+			$(".graph-header").find("a").removeData("data-coin");
 			//set detailed graph data-coin values
-			$("#graph-header").find("a").attr("data-coin", navLabel);
+			$(".graph-header").find("a").attr("data-coin", navLabel);
 			
 			//set active graph to 1D
-			$("#graph-header").find("a").removeClass("graph-active");
-			$("#graph-header").find('[data-period="one"]').addClass("graph-active");
-			gdaxHistorical("one", coinObject);
+			$(".graph-header").find("a").removeClass("graph-active");
+			$(".graph-header").find('[data-initial="true"]').addClass("graph-active");
+			//display detailed graph
+			gdaxHistorical("one", coinObject, "detailedChart");
 
 			//Display detailed data
 			coinDisplay(coinObject);
-			//set interval to update coin object
-			clearInterval(status.coinInterval);
+			//set interval to update price
 			priceUpdate();
 		}
 	})
 
-	//click event to display detailed graph
-	$("#graph-header").find("a").click(function(){
+	//click event to change graph
+	$(".graph-header").find("a").click(function(){
 		var graphChoice = $(this);
 		var coin = graphChoice.attr("data-coin");
 		var period = graphChoice.attr("data-period");
+		var graph = graphChoice.attr("data-graph");
 		var coinObject = coinList[coin];
-		console.log("coin: ", coin);
-		console.log("period: ", period)
-		console.log("coinObject: ", coinObject);
 		//highlight which item was selected
 		graphChoice.addClass("graph-active");
 		graphChoice.parent().siblings().find("a").removeClass("graph-active");
 		
 		//make graph
-		gdaxHistorical(period, coinObject);
+		gdaxHistorical(period, coinObject, graph);
 	})
 
 	//JQuery Update functions
@@ -269,7 +278,7 @@ $(document).ready(function() {
 		//change of price
 		$("#dtl-coin-price-change").text(coinObj.priceChangeDisplay);
 		//change in percentage
-		$("#dtl-coin-percent-change").text(coinObj.percentChangeDisplay);
+		$("#dtl-coin-percent-change").text(" (" + coinObj.percentChangeDisplay + ")");
 		// Open
 		$("#dtl-coin-open").text(coinObj.openDisplay);
 		// High
@@ -312,11 +321,21 @@ $(document).ready(function() {
 		$("#dtl-coin-about-link").text(coinObj.aboutLinkText);
 	}
 
-	//update detailed interval 
+	//update detailed  
 	function priceUpdate() {
 		status.coinInterval = setInterval(function(){
-			console.log("price update: ", status.currentCoin);
-			coinDisplay(status.currentCoin)}, 15000);
+			console.log("priceUpdate");
+			coinDisplay(status.currentCoin);
+			overviewDisplay();
+		}, 15000);
+	}
+
+	//updates graph 
+	function historicalUpdate() { 
+		status.historicalInterval = setInterval(function(){
+			console.log("historical interval", status.period, status.coinObj, status.graph)
+			gdaxHistorical(status.period, status.coinObj, status.graph)
+		}, 15000);
 	}
 
 	//APIs
@@ -328,7 +347,7 @@ $(document).ready(function() {
 		    method: 'GET',
 		    dataType: "Json",
 		    success: function(data) {
-		    	console.log("Cap: ", data);
+		    	// console.log("Cap: ", data);
 		    	var cap = data[0].market_cap_usd;
 		    	var circ = data[0].available_supply;
 		    	var max = data[0].max_supply;
@@ -367,7 +386,7 @@ $(document).ready(function() {
 		    method: 'GET',
 		    dataType: "Json",
 		    success: function(data) {
-		    	console.log("GDAX Stats: ", data);
+		    	// console.log("GDAX Stats: ", data);
 		    	var open = parseFloat(data.open);
 		    	var high = parseFloat(data.high);
 		    	var low = parseFloat(data.low);
@@ -401,6 +420,11 @@ $(document).ready(function() {
 
 		    	//load overview data
 				overviewDisplay(); 
+				//create graph if intial load
+				if (status.initialLoad === true) {
+					gdaxHistorical("one", btc, "overviewChart");
+					status.initialLoad = false;
+				}
 		    },
 		    error: function(err) {
 				console.log(err);
@@ -410,7 +434,7 @@ $(document).ready(function() {
 	
 
 	//calls GDAX and gets historical data for graphs https://docs.gdax.com/#get-historic-rates
-	function gdaxHistorical(period, coinObj) {
+	function gdaxHistorical(period, coinObj, graph) {
 		var gdaxUrl = "";
 
 		if (period === "year") {
@@ -428,6 +452,7 @@ $(document).ready(function() {
 		    method: 'GET',
 		    dataType: "Json",
 		    success: function(data) {
+		    	console.log("gdaxHistorical")
 		    	var gdaxData = data;
 		    	var priceArray = [];
 		    	var labelArray = [];
@@ -472,7 +497,7 @@ $(document).ready(function() {
 				    }
 		    	//one day logic
 		    	} else {
-		    		for (i = 0; i < 95; i++) {
+		    		for (i = 0; i < 96; i++) {
 		    			priceArray.unshift(gdaxData[i][4]);
 			    		if (i % 19 === 0) {
 				    		labelArray.unshift(moment.unix(gdaxData[i][0]).format('h:mm a'));
@@ -485,13 +510,28 @@ $(document).ready(function() {
 				priceArray.push(coinObj.price);
 
 				//if opening price is lower than closing price change color of graph to red
-				if (priceArray[0] > priceArray[priceArray.length - 1]) {
+				//first if checks for 1 day price because the data comes from 2 places so didnt always work out
+				//with the calculation in the else if 
+				if (gdaxUrl === coinObj.gdaxFifteenMin) {
+					if (coinObj.priceChange < 0) {
+						colorObj.border = 'rgb(210,63,49)';
+						colorObj.background = 'rgba(210,63,49, 0.15)';
+					}
+				} else if (priceArray[0] > priceArray[priceArray.length - 1]) {
 					colorObj.border = 'rgb(210,63,49)';
 					colorObj.background = 'rgba(210,63,49, 0.15)';
 				} 
 
 		    	//plot chart
-		    	makeChart(priceArray, labelArray, colorObj);
+		    	makeChart(priceArray, labelArray, colorObj, graph);
+
+		    	//set variables in the status object
+		    	status.period = period;
+		    	status.coinObj = coinObj;
+		    	status.graph = graph;
+		    	//set interval to update graph
+		    	clearInterval(status.historicalInterval);
+		    	historicalUpdate();
 		    },
 		    error: function(err) {
 				console.log(err);
@@ -501,8 +541,8 @@ $(document).ready(function() {
 
 
 	//Charts 
-	function makeChart(priceData, labelData, colorObj){
-		var ctx = document.getElementById("myChart").getContext('2d');
+	function makeChart(priceData, labelData, colorObj, graph){
+		var ctx = document.getElementById(graph).getContext('2d');
 		var myChart = new Chart(ctx, {
 		    type: 'line',
 		    data: {
@@ -520,6 +560,7 @@ $(document).ready(function() {
 		        }]
 		    },
 		    options: {
+		    	animation: false,
 		        scales: {
 		            yAxes: [{
 		                ticks: {
@@ -539,7 +580,7 @@ $(document).ready(function() {
 		    				padding: 0,
 		    				minRotation: 0,
 		    				maxRotation: 0,
-		    				labelOffset: -10,
+		    				// labelOffset: -10,
 		    				drawTicks: true,
 		    				tickMarkLength: 10
 		                }
@@ -550,7 +591,7 @@ $(document).ready(function() {
 	                    radius: 0
 	                }
 	            },//end elements
-		        maintainAspectRatio: true,
+		        maintainAspectRatio: false,
 		    	responsive: true,
 		    	legend: {
 		        	display: false
@@ -568,14 +609,14 @@ $(document).ready(function() {
 		coinCap(ltc);
 		//update coincap every 3 minutes
 		setInterval(function(){
-			gdaxStats(btc);
-			gdaxStats(eth);
-			gdaxStats(ltc);
+			coinCap(btc);
+			coinCap(eth);
+			coinCap(ltc);
 			console.log("Cap updated");
 		}, 180000);
 
 		//call gdax for stats
-		gdaxStats(btc);
+		gdaxStats(btc)
 		gdaxStats(eth);
 		gdaxStats(ltc);
 		//update gdax prices 15 seconds
