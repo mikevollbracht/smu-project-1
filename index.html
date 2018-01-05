@@ -59,7 +59,7 @@
 			<div id="overview-display" class="">
 				<h3>Overview</h3>
 				<!-- overview graph -->
-	    		<div  class="graph rounded focus">
+	    		<div  class="graph rounded">
 			 	 	<div class="graph-header">
 						<ul class="list-inline float-right">
 							<li class="list-inline-item"><a class="graph-active" href="#" data-graph="overviewChart" data-coin="btc" data-period="one" data-initial="true">Bitcoin</a></li>
@@ -72,9 +72,9 @@
 	    		</div>
 				
 				<!-- Each product card -->
-			  	<div class="row focus">
-				  <div class="col-12 col-sm-6 col-lg-4">
-				    <div class="card">
+			  	<div class="row">
+				  <div class="col-12 col-md-6 col-lg-4">
+				    <div class="card focus">
 				      <div class="card-body">
 				      	<h4 class="panel-title">Bitcoin</h4>
 				      	<h6>Current<span id="overview-btc-price" class="float-right"></span></h6>
@@ -86,8 +86,8 @@
 				      </div>
 				    </div>
 				  </div>
-				  <div class="col-12 col-sm-6 col-lg-4">
-				    <div class="card">
+				  <div class="col-12 col-md-6 col-lg-4">
+				    <div class="card focus">
 				      <div class="card-body">
 				      	<h4 class="panel-title">Ethereum</h4>
 				      	<h6>Current<span id="overview-eth-price" class="float-right"></span></h6>
@@ -99,8 +99,8 @@
 				      </div>
 				    </div>
 				  </div>
-				  <div class="col-12 col-sm-6 col-lg-4">
-				    <div class="card">
+				  <div class="col-12 col-md-6 col-lg-4">
+				    <div class="card focus">
 				      <div class="card-body">
 				      	<h4 class="panel-title">Litecoin</h4>
 				      	<h6>Current<span id="overview-ltc-price" class="float-right"></span></h6>
@@ -112,17 +112,20 @@
 				      </div>
 				    </div>
 				  </div>
-				  <div class="col-12 col-sm-6 col-lg-4">
-				    <div class="card">
+				  <div class="col-12 col-md-6 col-lg-4">
+				    <div class="card focus">
 				      <div class="card-body">
-				      	<h4 class="panel-title">Other Currencies</h4>
+				      	<h4 class="panel-title">Top Market Caps</h4>
+				      		<div id="overview-top-caps"></div>
 				      </div>
 				    </div>
 				  </div>
-				  <div class="col-12 col-sm-6 col-lg-4">
-				    <div class="card">
+				  <div class="col-12 col-md-8">
+				    <div class="card focus">
 				      <div class="card-body">
-				      	<h4 class="panel-title">Top Market Caps</h4>
+				      	<h4 class="panel-title">Other Currencies</h4>
+				      		<div id="overview-other-coins"></div>
+				      		<small class="text-muted">CoinMarketCap.com</small>
 				      </div>
 				    </div>
 				  </div>
@@ -141,8 +144,8 @@
 					
 				</div>
 				
-			 	 <div  class="graph rounded focus">
-			 	 	<div class="graph-header">
+			 	 <div  class="graph rounded">
+			 	 	<div id="detailed-graph" class="graph-header">
 						<ul class="list-inline float-right">
 							<li class="list-inline-item"><a href="#" data-graph="detailedChart" data-coin="" data-period="one" data-initial="true">1D</a></li>
 							<li class="list-inline-item"><a href="#" data-graph="detailedChart" data-coin="" data-period="five">5D</a></li>
@@ -155,9 +158,9 @@
 	    		</div>
 
 				<!-- End of graph -->
-				<div class="row justify-content-center focus">
-					<div class="col-12 col-sm-6 col-lg-4">
-					   <div class="card">
+				<div class="row">
+					<div class="col-12 col-md-6 col-lg-4">
+					   <div class="card focus">
 				      		<div class="card-body">
 						      	<h4 class="panel-title">24 Hour Stats</h4>
 								<h6>Open<span id="dtl-coin-open" class="float-right"></span></h6>
@@ -171,8 +174,8 @@
 					    	</div>
 						</div>
 					</div>
-					<div class="col-12 col-sm-6 col-lg-8">
-					    <div class="card">
+					<div class="col-12 col-md-6 col-lg-8">
+					   <div class="card focus">
 					      <div class="card-body">
 					      	<h4 class="panel-title">News</h4>
 								<div class="container">
@@ -189,21 +192,24 @@
 							 </div>
 						</div>
 					</div>
-					<div class="col-12 col-sm-6">
-					   <div class="card">
+					<div class="col-12 col-lg-6">
+						<div class="card focus">
 					      <div class="card-body">
-					      	<h4 class="panel-title">Day of Week</h4>
+					      	<h4 class="panel-title">Avg Change By Day</h4>
+					      	<div id="day-graph">
+					      		<canvas id="dayChart"></canvas>
+					      	</div>
 					      </div>
 					    </div>
 					</div>
-					  <div class="col-12 col-sm-6">
-					    <div class="card">
+					<div class="col-12 col-lg-6">
+					    <div class="card focus">
 					      <div class="card-body">
 					     	<h4 class="panel-title">About</h4>
 					     	<div class="container">
-								<h6 id="dtl-coin-about"></h6>
+								<p id="dtl-coin-about"></p>
 								<h6><a id="dtl-coin-about-link" href="">Learn More</a></h6>
-								<sub>Source: Wikipedia</sub>
+								<small class="text-muted">Wikipedia</small>
 					     	</div>
 					    </div>
 					  </div>

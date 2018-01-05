@@ -194,11 +194,14 @@ $(document).ready(function() {
 			overviewDisplay(); 
 
 			//display overview graph
-			gdaxHistorical("one", btc, "overviewChart");
+			gdaxHistorical("one", btc);
 
 			//set active graph to bitcoin
 			$(".graph-header").find("a").removeClass("graph-active");
 			$(".graph-header").find('[data-initial="true"]').addClass("graph-active");
+
+			//set status object graph to overview
+			status.graph = "overviewChart";
 
 		} else {
 			var coinObject = coinList[navLabel];
@@ -211,18 +214,24 @@ $(document).ready(function() {
 			//clear deatiled graph data-coin values
 			$(".graph-header").find("a").removeData("data-coin");
 			//set detailed graph data-coin values
-			$(".graph-header").find("a").attr("data-coin", navLabel);
+			$("#detailed-graph").find("a").attr("data-coin", navLabel);
 			
 			//set active graph to 1D
 			$(".graph-header").find("a").removeClass("graph-active");
 			$(".graph-header").find('[data-initial="true"]').addClass("graph-active");
 			//display detailed graph
-			gdaxHistorical("one", coinObject, "detailedChart");
+			gdaxHistorical("one", coinObject);
 
 			//Display detailed data
 			coinDisplay(coinObject);
 			//set interval to update price
 			priceUpdate();
+
+			//set status object graph to detailed
+			status.graph = "detailedChart";
+
+			//get day of week data
+			dayOfWeek(coinObject);
 		}
 	})
 
@@ -238,7 +247,7 @@ $(document).ready(function() {
 		graphChoice.parent().siblings().find("a").removeClass("graph-active");
 		
 		//make graph
-		gdaxHistorical(period, coinObject, graph);
+		gdaxHistorical(period, coinObject);
 	})
 
 	//JQuery Update functions
@@ -334,13 +343,13 @@ $(document).ready(function() {
 	function historicalUpdate() { 
 		status.historicalInterval = setInterval(function(){
 			console.log("historical interval", status.period, status.coinObj, status.graph)
-			gdaxHistorical(status.period, status.coinObj, status.graph)
+			gdaxHistorical(status.period, status.coinObj)
 		}, 15000);
 	}
 
 	//APIs
 	//coin market cap to get supply and market cap data
-	function coinCap (coinObj) {
+	function coinCap(coinObj) {
 
 		$.ajax({
 			url: coinObj.marketCapAPI,
@@ -376,6 +385,68 @@ $(document).ready(function() {
 		});
 	}
 
+	//top caps and other currencies
+	function topTenCaps() {
+
+		$.ajax({
+			url: "https://api.coinmarketcap.com/v1/ticker/?limit=10",
+		    method: 'GET',
+		    dataType: "Json",
+		    success: function(data) {
+		    	console.log("top ten", data)
+
+		    	for (i=0; i < data.length; i++){
+		    		var coinData = data[i];
+		    		var rank = coinData.rank;
+		    		var name = coinData.name;
+		    		var symbol = coinData.symbol;
+		    		var cap = numeral(coinData.market_cap_usd).format('0.00a').toUpperCase();
+		    		var price = coinData.price_usd;
+		    		var percent = coinData.percent_change_24h;
+		    		var original = (price / ((percent / 100) + 1)) ;
+		    		var priceDisplay = numeral(coinData.price_usd).format('0,0.00');
+		    		var percentDisplay = "("+coinData.percent_change_24h+"%)";
+		    		var change = numeral(price - original).format('+0,0.00');
+		    		var rankName = rank + ". " + name;
+
+		    		//new line for market caps
+		    		var newLine = $("<h6>" + rankName + "<span class='float-right'>"+ cap +"</span></h6>");
+
+		    		//add to top market caps
+		    		$("#overview-top-caps").append(newLine);
+
+		    		//if not btc, eth, or ltc show in other currencies
+		    		if (symbol !== "BTC" && symbol !== "ETH" && symbol !== "LTC") {
+
+		    			var newCoinDiv = $("<div class='clearfix'></div>")
+		    			var newName = $("<h6 class='d-inline-block otherCoins'>"+name+"</h6>")
+				       	var newList = $("<ul class='list-inline float-right otherCoins'></ul>")
+				       	var itemPrice = $("<li class='list-inline-item otherCoins'><h6>"+ priceDisplay +"</h6></li>")
+						var itemChange = $("<li class='list-inline-item otherCoins'><h6>"+ change +"</h6></li>")	
+						var itemPercent = $("<li class='list-inline-item otherCoins'><h6>"+ percentDisplay +"</h6></li>")
+
+						//add items to newList
+						newList.append(itemPrice);
+						newList.append(itemChange);
+						newList.append(itemPercent);
+
+						//add name and new list to div
+						newCoinDiv.append(newName);
+						newCoinDiv.append(newList);
+
+						//display on screen
+						$("#overview-other-coins").append(newCoinDiv);
+		    		}
+		    	}
+		    },
+		    error: function(err) {
+				console.log(err);
+			}
+		});
+	}
+
+	topTenCaps()
+	
 
 	//call GDAX stats and get current price data https://docs.gdax.com/#get-24hr-stats
 	//documentation doesnt show but also returns "last price" which is current price on the exchange
@@ -422,7 +493,9 @@ $(document).ready(function() {
 				overviewDisplay(); 
 				//create graph if intial load
 				if (status.initialLoad === true) {
-					gdaxHistorical("one", btc, "overviewChart");
+					setTimeout(function(){
+						gdaxHistorical("one", btc)
+					},250)
 					status.initialLoad = false;
 				}
 		    },
@@ -434,7 +507,7 @@ $(document).ready(function() {
 	
 
 	//calls GDAX and gets historical data for graphs https://docs.gdax.com/#get-historic-rates
-	function gdaxHistorical(period, coinObj, graph) {
+	function gdaxHistorical(period, coinObj) {
 		var gdaxUrl = "";
 
 		if (period === "year") {
@@ -452,7 +525,7 @@ $(document).ready(function() {
 		    method: 'GET',
 		    dataType: "Json",
 		    success: function(data) {
-		    	console.log("gdaxHistorical")
+		    	console.log("gdaxHistorical", coinObj)
 		    	var gdaxData = data;
 		    	var priceArray = [];
 		    	var labelArray = [];
@@ -523,12 +596,11 @@ $(document).ready(function() {
 				} 
 
 		    	//plot chart
-		    	makeChart(priceArray, labelArray, colorObj, graph);
+		    	makeChart(priceArray, labelArray, colorObj, status.graph);
 
 		    	//set variables in the status object
 		    	status.period = period;
 		    	status.coinObj = coinObj;
-		    	status.graph = graph;
 		    	//set interval to update graph
 		    	clearInterval(status.historicalInterval);
 		    	historicalUpdate();
@@ -539,23 +611,144 @@ $(document).ready(function() {
 		});
 	}//end gdaxHistorical
 
+	//
+	function dayOfWeek(coinObj) {
+		$.ajax({
+			url: coinObj.gdaxDay,
+		    method: 'GET',
+		    dataType: "Json",
+		    success: function(data) {
+		    	console.log("dayOfWeek", data)
+		    	var mon = [];
+		    	var tue = [];
+		    	var wed = [];
+		    	var thu = [];
+		    	var fri = [];
+		    	var sat = [];
+		    	var sun = [];
+		    	var dayArray = [mon, tue, wed, thu, fri, sat, sun];
+		    	var changeArray = [];
+		    	var backgroundArray = [];
+		    	var borderArray = [];
+
+		    	for (i=0; i < data.length; i++) {
+		    	 	//sunday is 0 
+		    	 	var day = moment.unix(data[i][0]).day();
+		    	 	var open = data[i][3];
+		    	 	var close = data[i][4];
+		    	 	//decimal
+		    	 	//((y2 - y1) / y1) = your percentage change.
+		    	 	var percentChange = ((close - open) / open) * 100;
+
+		    	 	if (day === 0) {
+		    	 		sun.push(percentChange);
+		    	 	} else if ( day === 1) {
+		    	 		mon.push(percentChange);
+		    	 	} else if ( day === 2) {
+		    	 		tue.push(percentChange);
+		    	 	} else if ( day === 3) {
+		    	 		wed.push(percentChange);
+		    	 	} else if ( day === 4) {
+		    	 		thu.push(percentChange);
+		    	 	} else if ( day === 5) {
+		    	 		fri.push(percentChange);
+		    	 	} else {
+		    	 		sat.push(percentChange);
+		    	 	}
+		    	}
+
+		    	for (i=0; i < dayArray.length; i++) {
+		    		var day = dayArray[i]; 
+		    		var numberItems = dayArray[i].length;
+		    		var sum = 0;
+		    		var average = 0;
+
+		    		for (x=0; x < day.length; x++){
+		    			sum += day[x];
+		    		}
+
+		    		//get average for the day
+		    		average = (sum / numberItems);
+
+		    		//add each day monday
+		    		dayArray[i] = average.toFixed(3);
+
+		    		//set color for bar graph
+		    		if (average < 0) {
+		    			backgroundArray[i] = 'rgba(210,63,49, 0.15)';
+		    			borderArray[i] = 'rgb(210,63,49)';
+		    		} else {
+		    			backgroundArray[i] = 'rgba(36, 157, 61, 0.15)';
+		    			borderArray[i] = 'rgb(36, 157, 61)';
+		    		}
+		    	}
+
+		    	//also add so that the learn more links open in a new window
+		    	console.log(dayArray)
+
+		    	var ctx = document.getElementById("dayChart").getContext('2d');
+				var myChart = new Chart(ctx, {
+				    type: 'bar',
+				    data: {
+				        labels: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
+				        datasets: [{
+				            data: dayArray,
+				            backgroundColor: backgroundArray,
+				            borderColor: borderArray,
+				            borderWidth: 1
+				        }]
+				    },
+				    options: {
+				    	animation: false,
+				        scales: {
+				            yAxes: [{
+				                ticks: {
+				                    beginAtZero:true,    
+		      						maxTicksLimit: 5,
+		      						callback: function(value) {
+						               return value + "%"
+						           }
+				                }
+				            }],
+				            xAxes: [{
+				                gridLines: {
+				                    display:false
+				                }
+				            }]
+				        },
+				        maintainAspectRatio: false,
+				    	responsive: true,
+				    	legend: {
+				        	display: false
+				     	},
+				     	tooltips: {
+				        	callbacks: {
+			                    label: function(tooltipItem, data) {
+			                        return data['datasets'][0]['data'][tooltipItem['index']] + '%';
+			                    }
+		                	}
+				        },//end tooltips
+					}
+				});
+		    },
+		    error: function(err) {
+				console.log(err);
+			}
+		});
+	}//end day of week
 
 	//Charts 
 	function makeChart(priceData, labelData, colorObj, graph){
+		console.log("MakeChart", graph)
 		var ctx = document.getElementById(graph).getContext('2d');
 		var myChart = new Chart(ctx, {
 		    type: 'line',
 		    data: {
 		        labels: labelData,
 		        datasets: [{
-		            label: '# of Votes',
 		            data: priceData,
-		            backgroundColor: [
-		                colorObj.background
-		            ],
-		            borderColor: [
-		                colorObj.border
-		            ],
+		            backgroundColor: colorObj.background,
+		            borderColor: colorObj.border,
 		            borderWidth: 3
 		        }]
 		    },
@@ -565,7 +758,11 @@ $(document).ready(function() {
 		            yAxes: [{
 		                ticks: {
 		                    beginAtZero:false,
-		      				maxTicksLimit: 5
+		      				maxTicksLimit: 5,
+		      				callback: function(value) {
+				               return "$" + numeral(value).format('0,0');
+				           }
+
 		                },
 		            	gridLines: {
 		                    display:false
@@ -603,18 +800,6 @@ $(document).ready(function() {
 
 	//intial loading of page and updated calls
 	function intialLoad() {
-		//call coincap
-		coinCap(btc);
-		coinCap(eth);
-		coinCap(ltc);
-		//update coincap every 3 minutes
-		setInterval(function(){
-			coinCap(btc);
-			coinCap(eth);
-			coinCap(ltc);
-			console.log("Cap updated");
-		}, 180000);
-
 		//call gdax for stats
 		gdaxStats(btc)
 		gdaxStats(eth);
@@ -626,6 +811,18 @@ $(document).ready(function() {
 			gdaxStats(ltc);
 			console.log("GDAX Stats updated");
 		}, 15000);
+
+		//call coincap
+		coinCap(btc);
+		coinCap(eth);
+		coinCap(ltc);
+		//update coincap every 3 minutes
+		setInterval(function(){
+			coinCap(btc);
+			coinCap(eth);
+			coinCap(ltc);
+			console.log("Cap updated");
+		}, 180000);
 	};
 
 	intialLoad();

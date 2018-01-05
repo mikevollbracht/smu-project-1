@@ -6,7 +6,7 @@ body {
 }
 
 .focus {
-    margin-bottom: 20px;
+    margin-top: 20px;
 }
 
 /*Logo*/
@@ -137,6 +137,10 @@ canvas {
     max-height: 350px;
 }
 
+.otherCoins {
+    margin-bottom: 0px;
+}
+
 /*detailed*/
 #detailed-header ul {
     margin-bottom: 0px;
@@ -144,17 +148,8 @@ canvas {
 
 
 /*Media Queries*/
-@media (max-width: 575.99px) { 
-    canvas {
-        min-height: 220px;
-        max-height: 220px;
-    }
-    
-} /* end media queries*/
-
-
 /*Change the menu from sidebar to mobile*/
-@media (max-width: 767.99px) { 
+@media (max-width: 575.99px) { 
     /*Displays Mobile Nav*/
     #mobile-nav {
         display: flex;
@@ -169,6 +164,11 @@ canvas {
     #content {
         margin-top: 70px;
         margin-left: 0px;
+    }
+
+    canvas {
+        min-height: 220px;
+        max-height: 220px;
     }
 
 } /* end media queries*/
