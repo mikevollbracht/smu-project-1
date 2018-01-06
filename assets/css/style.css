@@ -6,7 +6,7 @@ body {
 }
 
 .focus {
-    margin-top: 20px;
+    margin-bottom: 20px;
 }
 
 /*Logo*/
@@ -17,7 +17,7 @@ body {
     padding-top: 7px;
 }
 
-#dash {
+#dash, #mobile-dash {
     color: #249d3d;
 }
 
@@ -28,9 +28,6 @@ body {
     margin-left: -40px;
 }
 
-#mobile-dash {
-    color: #249d3d;
-}
 
 /*Nav and Side Bar*/
 #sidebar {

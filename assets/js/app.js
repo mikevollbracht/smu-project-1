@@ -332,6 +332,8 @@ $(document).ready(function() {
 
 	//update detailed  
 	function priceUpdate() {
+		clearInterval(status.coinInterval);
+
 		status.coinInterval = setInterval(function(){
 			console.log("priceUpdate");
 			coinDisplay(status.currentCoin);
@@ -341,6 +343,8 @@ $(document).ready(function() {
 
 	//updates graph 
 	function historicalUpdate() { 
+		clearInterval(status.historicalInterval);
+
 		status.historicalInterval = setInterval(function(){
 			console.log("historical interval", status.period, status.coinObj, status.graph)
 			gdaxHistorical(status.period, status.coinObj)
@@ -611,7 +615,8 @@ $(document).ready(function() {
 		});
 	}//end gdaxHistorical
 
-	//
+	//Charts
+	//day of week bar chart
 	function dayOfWeek(coinObj) {
 		$.ajax({
 			url: coinObj.gdaxDay,
@@ -683,8 +688,11 @@ $(document).ready(function() {
 		    		}
 		    	}
 
-		    	//also add so that the learn more links open in a new window
-		    	console.log(dayArray)
+		    	//clear chart 
+		    	$("#dayChart").remove();
+		    	//add new div for chart
+		    	$("#day-graph").append("<canvas id='dayChart'></canvas>");
+
 
 		    	var ctx = document.getElementById("dayChart").getContext('2d');
 				var myChart = new Chart(ctx, {
@@ -737,7 +745,7 @@ $(document).ready(function() {
 		});
 	}//end day of week
 
-	//Charts 
+	//price chart
 	function makeChart(priceData, labelData, colorObj, graph){
 		console.log("MakeChart", graph)
 		var ctx = document.getElementById(graph).getContext('2d');
@@ -760,7 +768,7 @@ $(document).ready(function() {
 		                    beginAtZero:false,
 		      				maxTicksLimit: 5,
 		      				callback: function(value) {
-				               return "$" + numeral(value).format('0,0');
+				               return numeral(value).format('0,0');
 				           }
 
 		                },
