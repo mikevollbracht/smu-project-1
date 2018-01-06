@@ -517,7 +517,7 @@ $(document).ready(function() {
 	function gdaxHistorical(period, coinObj) {
 		var gdaxUrl = "";
 
-		if (period === "year") {
+		if (period === "six") {
 			gdaxUrl = coinObj.gdaxDay;
 		} else if (period === "month"){
 			gdaxUrl = coinObj.gdaxSixHour;
@@ -532,7 +532,7 @@ $(document).ready(function() {
 		    method: 'GET',
 		    dataType: "Json",
 		    success: function(data) {
-		    	console.log("gdaxHistorical", coinObj)
+		    	console.log("gdaxHistorical", data)
 		    	var gdaxData = data;
 		    	var priceArray = [];
 		    	var labelArray = [];
@@ -542,13 +542,13 @@ $(document).ready(function() {
 		    			background: 'rgba(36, 157, 61, 0.15)'
 		    		};
 
-		    	//year logic
-		    	if (period === "year") {
+		    	//six month logic
+		    	if (period === "six") {
 		    		//gets 364 days of 1 day prices
-			    	for (i = 0; i < 364; i++) {
+			    	for (i = 0; i < 180; i++) {
 						//use unshift so that current day is at end of array
 			    		priceArray.unshift(gdaxData[i][4]);
-			    		if (i % 73 === 0) {
+			    		if (i % 40 === 0) {
 				    		labelArray.unshift(moment.unix(gdaxData[i][0]).format('MMM D'));
 				    	} else {
 				    		labelArray.unshift("");
