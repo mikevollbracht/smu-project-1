@@ -232,6 +232,9 @@ $(document).ready(function() {
 
 			//get day of week data
 			dayOfWeek(coinObject);
+
+			//get news articles
+			getNews(coinObject.coin);
 		}
 	})
 
@@ -810,6 +813,66 @@ $(document).ready(function() {
 		    }//end options
 		});//end var myChart
 	}//end make chart
+
+	//news
+	function getNews(searchTerm){
+		console.log("Getting news");
+		var yesterdayDate = moment().format("YYYY-MM-DD")
+		console.log("yesterdayDate", yesterdayDate);
+
+		$.ajax({
+			url: "https://newsapi.org/v2/everything?q="+searchTerm+"&apiKey=b32a0ad2ed594a4798bb1dd9add6c2e5&language=en&sortBy=relevancy&from="+yesterdayDate,
+		    method: 'GET',
+		    dataType: "Json",
+		    success: function(data) {
+		    	console.log(data);
+		    	console.log($("#dtl-coin-headline1-date"));
+		    	console.log(data.articles[0]["description"]);
+
+		    	newsElement = $(".coin-news ");
+		    	console.log("Adding for "+searchTerm);
+		    	newsElement.html(" ");
+
+		    	for(i=0; i<3; i++){
+		    		newsRow = document.createElement("h5");
+		    		newsLink = document.createElement("a");
+		    		newsLink.setAttribute('class','news-title');
+		    		newsLink.setAttribute('href', data.articles[i]["url"]);
+		    		newsRow.append(newsLink);
+		    		newsLink.innerText = data.articles[i]["title"];
+
+		    		newsRow.append(newsLink);
+		    		newsElement.append(newsRow);
+
+
+		    		newsContent = document.createElement("p");
+		    		newsContent.setAttribute('class','news-paragraph');
+		    		newsContent.innerText = data.articles[i]["description"];
+
+		    		newsElement.append(newsContent);
+
+
+		    		newsDate = document.createElement("p");
+		    		newsDate.setAttribute('class','news-date');
+		    		timestamp = data.articles[i]["publishedAt"];
+		    		date = timestamp.split("T");
+		    		newsDate.innerText = "Published On: "+moment(date[0]).format("MM/DD/YYYY");
+
+		    		newsElement.append(newsDate);
+
+		    	}
+		    	
+
+		    	// $("#dtl-coin-headline1-date").innerHTML = data.articles[0]["title"];
+		    	// $("#dtl-coin-headline2-date").innerHTML = data.articles[1]["title"];
+		    	// $("#dtl-coin-headline3-date").innerHTML = data.articles[2]["title"];
+		    	
+		    },
+		    error: function(err) {
+				console.log(err);
+			}
+		});
+	}
 
 	//intial loading of page and updated calls
 	function intialLoad() {
