@@ -748,6 +748,11 @@ $(document).ready(function() {
 	//price chart
 	function makeChart(priceData, labelData, colorObj, graph){
 		console.log("MakeChart", graph)
+		//clear chart 
+    	$("#overviewChart").remove();
+    	//add new div for chart
+    	$("#graph-overview").append("<canvas id='overviewChart'></canvas>");
+
 		var ctx = document.getElementById(graph).getContext('2d');
 		var myChart = new Chart(ctx, {
 		    type: 'line',
