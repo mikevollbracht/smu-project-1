@@ -29,16 +29,6 @@ $(document).ready(function() {
 		marketCapDisplay: 0,
 		circulatingSupplyDisplay: 0,
 		maxSupplyDisplay: 0,
-		//news
-		news1Headline: "",
-		news1Link: "",
-		news1Date: "",
-		news2Headline: "",
-		news2Link: "",
-		news2Date: "",
-		news3Headline: "",
-		news3Link: "",
-		news3Date: "",
 		about: "Bitcoin is a cryptocurrency and worldwide payment system. It is the first decentralized digital currency, as the system works without a central bank or single administrator. The network is peer-to-peer and transactions take place between users directly through the use of cryptography, without an intermediary. These transactions are verified by network nodes and recorded in a public distributed ledger called a blockchain. Bitcoin was invented by an unknown person or group of people under the name Satoshi Nakamoto and released as open-source software in 2009.",
 		aboutLink: "https://bitcoin.org/en/",
 		//api urls
@@ -76,16 +66,6 @@ $(document).ready(function() {
 		marketCapDisplay: 0,
 		circulatingSupplyDisplay: 0,
 		maxSupplyDisplay: "No Limit",
-		//news
-		news1Headline: "",
-		news1Link: "",
-		news1Date: "",
-		news2Headline: "",
-		news2Link: "",
-		news2Date: "",
-		news3Headline: "",
-		news3Link: "",
-		news3Date: "",
 		about: "Ethereum is an open-source, public, blockchain-based distributed computing platform featuring smart contract (scripting) functionality. It provides a decentralized Turing-complete virtual machine, the Ethereum Virtual Machine (EVM), which can execute scripts using an international network of public nodes. Ethereum also provides a cryptocurrency token called 'ether', which can be transferred between accounts and used to compensate participant nodes for computations performed.  'Gas', an internal transaction pricing mechanism, is used to mitigate spam and allocate resources on the network.",
 		aboutLink: "https://www.ethereum.org/",
 		//api urls
@@ -123,16 +103,6 @@ $(document).ready(function() {
 		marketCapDisplay: 0,
 		circulatingSupplyDisplay: 0,
 		maxSupplyDisplay: 0,
-		//news
-		news1Headline: "",
-		news1Link: "",
-		news1Date: "",
-		news2Headline: "",
-		news2Link: "",
-		news2Date: "",
-		news3Headline: "",
-		news3Link: "",
-		news3Date: "",
 		about: "Litecoin is a peer-to-peer cryptocurrency and open source software project released under the MIT/X11 license. Creation and transfer of coins is based on an open source cryptographic protocol and is not managed by any central authority. While inspired by, and in most regards technically nearly identical to Bitcoin (BTC), Litecoin is far quicker and cheaper.",
 		aboutLink: "https://litecoin.org/",
 		//api urls
@@ -283,6 +253,27 @@ $(document).ready(function() {
 
 	//update detailed coin info when selected
 	function coinDisplay (coinObj) {
+		//set color of price and percent
+		if (coinObj.priceChange < 0) {
+			//if negative red
+			$("#dtl-coin-price-change").removeClass("positive");
+			$("#dtl-coin-percent-change").removeClass("positive");
+			$("#dtl-coin-price-change").addClass("negative");
+			$("#dtl-coin-percent-change").addClass("negative");
+		} else if (coinObj.priceChange > 0) {
+			//if positive green
+			$("#dtl-coin-price-change").removeClass("negative");
+			$("#dtl-coin-percent-change").removeClass("negative");
+			$("#dtl-coin-price-change").addClass("positive");
+			$("#dtl-coin-percent-change").addClass("positive");
+		} else {
+			//if no change then black
+			$("#dtl-coin-price-change").removeClass("negative");
+			$("#dtl-coin-percent-change").removeClass("negative");
+			$("#dtl-coin-price-change").removeClass("positive");
+			$("#dtl-coin-percent-change").removeClass("positive");
+		}
+
 		//name of coin
 		$("#dtl-coin-name").text(coinObj.coin);
 		//current price
@@ -338,7 +329,7 @@ $(document).ready(function() {
 		clearInterval(status.coinInterval);
 
 		status.coinInterval = setInterval(function(){
-			console.log("priceUpdate");
+			// console.log("priceUpdate");
 			coinDisplay(status.currentCoin);
 			overviewDisplay();
 		}, 15000);
@@ -349,7 +340,7 @@ $(document).ready(function() {
 		clearInterval(status.historicalInterval);
 
 		status.historicalInterval = setInterval(function(){
-			console.log("historical interval", status.period, status.coinObj, status.graph)
+			// console.log("historical interval", status.period, status.coinObj, status.graph)
 			gdaxHistorical(status.period, status.coinObj)
 		}, 15000);
 	}
@@ -400,7 +391,10 @@ $(document).ready(function() {
 		    method: 'GET',
 		    dataType: "Json",
 		    success: function(data) {
-		    	console.log("top ten", data)
+		    	// console.log("top ten", data)
+		    	//clear existing data if there
+		    	$("#overview-other-coins").find(".clearfix").remove();
+		    	$("#overview-top-caps").find("h6").remove();
 
 		    	for (i=0; i < data.length; i++){
 		    		var coinData = data[i];
@@ -432,6 +426,18 @@ $(document).ready(function() {
 						var itemChange = $("<li class='list-inline-item otherCoins'><h6>"+ change +"</h6></li>")	
 						var itemPercent = $("<li class='list-inline-item otherCoins'><h6>"+ percentDisplay +"</h6></li>")
 
+						//set color of price and percent
+						if ((price - original) < 0) {
+							//if negative red
+							itemChange.addClass("negative");
+							itemPercent.addClass("negative");
+
+						} else if ((price - original) > 0) {
+							//if positive green
+							itemChange.addClass("positive");
+							itemPercent.addClass("positive");
+						} 
+
 						//add items to newList
 						newList.append(itemPrice);
 						newList.append(itemChange);
@@ -452,7 +458,7 @@ $(document).ready(function() {
 		});
 	}
 
-	topTenCaps()
+	
 	
 
 	//call GDAX stats and get current price data https://docs.gdax.com/#get-24hr-stats
@@ -532,7 +538,7 @@ $(document).ready(function() {
 		    method: 'GET',
 		    dataType: "Json",
 		    success: function(data) {
-		    	console.log("gdaxHistorical", data)
+		    	// console.log("gdaxHistorical", data)
 		    	var gdaxData = data;
 		    	var priceArray = [];
 		    	var labelArray = [];
@@ -626,7 +632,7 @@ $(document).ready(function() {
 		    method: 'GET',
 		    dataType: "Json",
 		    success: function(data) {
-		    	console.log("dayOfWeek", data)
+		    	// console.log("dayOfWeek", data)
 		    	var mon = [];
 		    	var tue = [];
 		    	var wed = [];
@@ -706,7 +712,7 @@ $(document).ready(function() {
 				            data: dayArray,
 				            backgroundColor: backgroundArray,
 				            borderColor: borderArray,
-				            borderWidth: 1
+				            borderWidth: 3
 				        }]
 				    },
 				    options: {
@@ -750,11 +756,17 @@ $(document).ready(function() {
 
 	//price chart
 	function makeChart(priceData, labelData, colorObj, graph){
-		console.log("MakeChart", graph)
+		// console.log("MakeChart", graph)
 		//clear chart 
     	$("#overviewChart").remove();
+    	$("#detailedChart").remove();
+    	
     	//add new div for chart
     	$("#graph-overview").append("<canvas id='overviewChart'></canvas>");
+    	$("#graph-detailed").append("<canvas id='detailedChart'></canvas>");
+
+    	//remove repeating iframe from div that is created every time graph is updated
+    	$(".graph").find("iframe").remove();
 
 		var ctx = document.getElementById(graph).getContext('2d');
 		var myChart = new Chart(ctx, {
@@ -816,56 +828,53 @@ $(document).ready(function() {
 
 	//news
 	function getNews(searchTerm){
-		console.log("Getting news");
 		var yesterdayDate = moment().format("YYYY-MM-DD")
-		console.log("yesterdayDate", yesterdayDate);
 
 		$.ajax({
 			url: "https://newsapi.org/v2/everything?q="+searchTerm+"&apiKey=b32a0ad2ed594a4798bb1dd9add6c2e5&language=en&sortBy=relevancy&from="+yesterdayDate,
 		    method: 'GET',
 		    dataType: "Json",
 		    success: function(data) {
-		    	console.log(data);
-		    	console.log($("#dtl-coin-headline1-date"));
-		    	console.log(data.articles[0]["description"]);
+		    	// console.log(data);
+		    	// console.log($("#dtl-coin-headline1-date"));
+		    	// console.log(data.articles[0]["description"]);
 
-		    	newsElement = $(".coin-news ");
-		    	console.log("Adding for "+searchTerm);
-		    	newsElement.html(" ");
+		    	newsElement = $(".coin-news");
+		    	$(".newsItem").remove();
 
 		    	for(i=0; i<3; i++){
+		    		var newsDiv = $("<div class='newsItem'></div>");
+
+		    		//news link
 		    		newsRow = document.createElement("h5");
 		    		newsLink = document.createElement("a");
 		    		newsLink.setAttribute('class','news-title');
 		    		newsLink.setAttribute('href', data.articles[i]["url"]);
+		    		newsLink.setAttribute('target', "_blank");
 		    		newsRow.append(newsLink);
 		    		newsLink.innerText = data.articles[i]["title"];
 
 		    		newsRow.append(newsLink);
-		    		newsElement.append(newsRow);
+		    		newsDiv.append(newsRow);
 
-
+		    		//news preview
 		    		newsContent = document.createElement("p");
 		    		newsContent.setAttribute('class','news-paragraph');
 		    		newsContent.innerText = data.articles[i]["description"];
 
-		    		newsElement.append(newsContent);
+		    		newsDiv.append(newsContent);
 
-
-		    		newsDate = document.createElement("p");
+		    		//news date
+		    		newsDate = document.createElement("small");
 		    		newsDate.setAttribute('class','news-date');
 		    		timestamp = data.articles[i]["publishedAt"];
 		    		date = timestamp.split("T");
-		    		newsDate.innerText = "Published On: "+moment(date[0]).format("MM/DD/YYYY");
+		    		newsDate.innerText = moment(date[0]).format("MM/DD/YYYY");
 
-		    		newsElement.append(newsDate);
-
+		    		newsDiv.append(newsDate);
+		    		newsElement.append(newsDiv);
 		    	}
-		    	
-
-		    	// $("#dtl-coin-headline1-date").innerHTML = data.articles[0]["title"];
-		    	// $("#dtl-coin-headline2-date").innerHTML = data.articles[1]["title"];
-		    	// $("#dtl-coin-headline3-date").innerHTML = data.articles[2]["title"];
+	
 		    	
 		    },
 		    error: function(err) {
@@ -885,7 +894,7 @@ $(document).ready(function() {
 			gdaxStats(btc);
 			gdaxStats(eth);
 			gdaxStats(ltc);
-			console.log("GDAX Stats updated");
+			// console.log("GDAX Stats updated");
 		}, 15000);
 
 		//call coincap
@@ -897,8 +906,16 @@ $(document).ready(function() {
 			coinCap(btc);
 			coinCap(eth);
 			coinCap(ltc);
-			console.log("Cap updated");
+			// console.log("Cap updated");
 		}, 180000);
+
+		//get top 10 caps
+		topTenCaps()
+		//update every minute
+		setInterval(function(){
+			topTenCaps()
+		}, 60000);
+
 	};
 
 	intialLoad();

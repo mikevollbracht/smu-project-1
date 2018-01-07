@@ -15,7 +15,7 @@
     <nav id="sidebar">
         <!-- Sidebar Header -->
         <div class="sidebar-header text-center">
-            <h3 id="logo">Coin<span id="dash">Dash</span></h3>
+            <h3 id="logo">coin<span id="dash">dash</span></h3>
         </div>
 
         <!-- Sidebar Menu -->
@@ -56,7 +56,7 @@
 	<!-- Content -->
 	<div id="content">
 		<div id="content-container">
-			<div id="overview-display" class="">
+			<div id="overview-display">
 				<h3>Overview</h3>
 				<!-- overview graph -->
 	    		<div  class="graph rounded focus" id="graph-overview">
@@ -120,7 +120,7 @@
 				      </div>
 				    </div>
 				  </div>
-				  <div class="col-12 col-md-8">
+				  <div class="col-12 col-md-8 col-lg-6 col-xl-5">
 				    <div class="card focus">
 				      <div class="card-body">
 				      	<h4 class="panel-title">Other Currencies</h4>
@@ -143,7 +143,7 @@
 					
 				</div>
 				
-			 	 <div  class="graph rounded focus">
+			 	 <div  class="graph rounded focus" id="graph-detailed">
 			 	 	<div id="detailed-graph" class="graph-header">
 						<ul class="list-inline float-right">
 							<li class="list-inline-item"><a href="#" data-graph="detailedChart" data-coin="" data-period="one" data-initial="true">1D</a></li>
@@ -158,7 +158,7 @@
 
 				<!-- End of graph -->
 				<div class="row">
-					<div class="col-12 col-md-6 col-lg-4">
+					<div class="col-12 col-lg-4">
 					   <div class="card focus">
 				      		<div class="card-body">
 						      	<h4 class="panel-title">24 Hour Stats</h4>
@@ -173,34 +173,29 @@
 					    	</div>
 						</div>
 					</div>
-					<div class="col-12 col-md-6 col-lg-8">
-					   <div class="card focus">
-					      <div class="card-body">
-					      	<h4 class="panel-title">News</h4>
-								<div class="container coin-news">
-								<!-- Story 1 -->
-							      <h5><a id="dtl-coin-headline1" href="#"></a></h5>
-							      <p id="dtl-coin-headline1-date"></p>
-							    <!-- Story 2 -->
-							      <h5><a id="dtl-coin-headline2" href="#"></a></h5>
-							       <p id="dtl-coin-headline2-date"></p>
-							    <!-- Story 3 -->
-							      <h5><a id="dtl-coin-headline3" href="#"></a></h5>
-							       <p id="dtl-coin-headline3-date"></p>
-							    </div>
-							 </div>
-						</div>
-					</div>
-					<div class="col-12 col-lg-6">
+
+					<div class="col-12 col-lg-8">
 						<div class="card focus">
 					      <div class="card-body">
-					      	<h4 class="panel-title">Avg Change By Day</h4>
+					      	<h4 class="panel-title">Average Change</h4>
 					      	<div id="day-graph">
 					      		<canvas id="dayChart"></canvas>
 					      	</div>
 					      </div>
 					    </div>
 					</div>
+
+					<div class="col-12 col-lg-6">
+					   <div class="card focus">
+					      <div class="card-body">
+					      	<h4 class="panel-title">News</h4>
+								<div class="container coin-news">
+							
+							    </div>
+							 </div>
+						</div>
+					</div>
+					
 					<div class="col-12 col-lg-6">
 					    <div class="card focus">
 					      <div class="card-body">

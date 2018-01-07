@@ -1,6 +1,6 @@
 /*Global*/
 body {
-    background-color: #ecf0f1;   
+    background: #f0edf2;
     font-family: 'Ubuntu', sans-serif;
     font-weight: 300;
 }
@@ -144,6 +144,25 @@ canvas {
     margin-bottom: 0px;
 }
 
+.news-paragraph {
+    margin-bottom: 0px;
+}
+
+.newsItem {
+    margin-bottom: 15px;
+}
+
+#dtl-coin-about-link, .news-title {
+    color: black;
+}
+
+.positive {
+    color: #249d3d;
+}
+
+.negative {
+    color: rgb(210,63,49);
+}
 
 /*Media Queries*/
 /*Change the menu from sidebar to mobile*/
