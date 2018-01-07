@@ -181,6 +181,7 @@ canvas {
     #content {
         margin-top: 70px;
         margin-left: 0px;
+        overflow:hidden;
     }
 
     canvas {
