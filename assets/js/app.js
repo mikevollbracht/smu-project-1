@@ -206,6 +206,9 @@ $(document).ready(function() {
 			//get news articles
 			getNews(coinObject.coin);
 		}
+
+		//scroll to top of page
+		window.scrollTo(0, 0);
 	})
 
 	//click event to change graph
@@ -226,6 +229,7 @@ $(document).ready(function() {
 	//JQuery Update functions
 	//update overview info when selected
 	function overviewDisplay() {
+		
 		//btc
 		$("#overview-btc-price").text(btc.priceDisplay);
 		$("#overview-btc-change").text(btc.priceChangeDisplay);
@@ -782,6 +786,9 @@ $(document).ready(function() {
 		    },
 		    options: {
 		    	animation: false,
+		    	tooltips: {
+		    		enabled: false
+		    	},
 		        scales: {
 		            yAxes: [{
 		                ticks: {
@@ -793,7 +800,7 @@ $(document).ready(function() {
 
 		                },
 		            	gridLines: {
-		                    display:false
+		                    display: false
 		                }
 		            }],
 		            xAxes: [{
