@@ -708,7 +708,7 @@ $(document).ready(function() {
 
 
 		    	var ctx = document.getElementById("dayChart").getContext('2d');
-				var myChart = new Chart(ctx, {
+				var barChart = new Chart(ctx, {
 				    type: 'bar',
 				    data: {
 				        labels: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
@@ -760,7 +760,6 @@ $(document).ready(function() {
 
 	//price chart
 	function makeChart(priceData, labelData, colorObj, graph){
-		// console.log("MakeChart", graph)
 		//clear chart 
     	$("#overviewChart").remove();
     	$("#detailedChart").remove();
@@ -773,7 +772,7 @@ $(document).ready(function() {
     	$(".graph").find("iframe").remove();
 
 		var ctx = document.getElementById(graph).getContext('2d');
-		var myChart = new Chart(ctx, {
+		var priceChart = new Chart(ctx, {
 		    type: 'line',
 		    data: {
 		        labels: labelData,
